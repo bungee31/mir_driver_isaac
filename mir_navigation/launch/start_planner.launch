@@ -1,0 +1,41 @@
+<launch>
+  <arg name="local_planner"          default="dwb"             doc="Local planner can be either dwa, eband, base, teb or pose" />
+  <arg name="map_file" default="$(find mir_gazebo)/maps/maze.yaml" doc="Path to a map .yaml file (required)." />
+  <arg name="tf_prefix" default="" doc="tf_prefix to be used by gazebo plugins and in the robot's urdf etc." />
+  <arg name="prepend_prefix_to_laser_frame" default="true" doc="Set this to 'true' if you don't start the spawn_model node inside a namespace."/>
+ <arg name="prefix" value="$(arg tf_prefix)/" if="$(eval tf_prefix != '')" /> <!-- $(arg prefix) is used in all the config files! TODO: For multiple robots, create groups when loading the parameters to overwrite the arg? -->
+  <arg name="prefix" value=""                  unless="$(eval tf_prefix != '')" />
+    <arg name="namespace" default="$(arg prefix)" doc="Namespace to push all topics into."/>
+  <arg name="gui" default="true" />
+
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
+
+	<!-- AMCL -->
+  <include file="$(find mir_navigation)/launch/amcl.launch">
+   <arg name="initial_pose_x" value="10.0"/>
+   <arg name="initial_pose_y" value="10.0"/>
+  </include>
+
+ <!-- Mir -->
+   <include file="$(find mir_description)/launch/upload_mir_urdf.launch" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="$(arg gui)"/>
+  </node>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- <include file="$(find mir_bringup)/launch/mir_remote.launch">
+    <arg name="tf_prefix" value="$(arg tf_prefix)" />
+  </include> -->
+
+
+    <include file="$(find mir_navigation)/launch/move_base.xml">
+      <arg name="local_planner" value="$(arg local_planner)"/>
+      <arg name="prefix" value="$(arg prefix)" />
+    </include>
+
+ <!-- rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find mir_navigation)/rviz/navigation.rviz"/>
+</launch>

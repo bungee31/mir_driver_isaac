@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="tf_prefix" default="" doc="tf_prefix to be used by gazebo plugins and in the robot's urdf etc." />
+  <arg name="prefix" value="" />
+  <arg name="prepend_prefix_to_laser_frame" default="true" doc="Set this to 'true' if you don't start the spawn_model node inside a namespace."/>
+
+<include file="$(find mir_bringup)/launch/includes/description.launch.xml">
+    <arg name="tf_prefix"                     value="$(arg tf_prefix)" />
+    <arg name="prepend_prefix_to_laser_frame" value="$(arg prepend_prefix_to_laser_frame)" />
+  </include>
+
+ <!-- Load ros_control controller configurations -->
+  <rosparam file="$(find mir_description)/config/joint_state_controller.yaml" command="load" />
+  <rosparam file="$(find mir_description)/config/diffdrive_controller.yaml" command="load" subst_value="true" />
+  
+ <!-- Add passive + mimic joints to joint_states topic
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <rosparam param="source_list">[mir/joint_states]</rosparam>
+    <param name="rate" value="200.0" />
+  </node> -->
+
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />
+     <!-- create combined scan topic (like on real MiR) -->
+    <!-- <node pkg="topic_tools" type="relay" name="b_scan_relay" args="b_scan scan"/>
+    <node pkg="topic_tools" type="relay" name="f_scan_relay" args="f_scan scan"/>
+
+    <node name="b_rep117_laser_filter" pkg="mir_driver" type="rep117_filter.py" output="screen">
+      <remap from="scan" to="b_scan" />
+      <remap from="scan_filtered" to="b_scan_rep117" />
+    </node>
+
+    <node name="f_rep117_laser_filter" pkg="mir_driver" type="rep117_filter.py" output="screen">
+      <remap from="scan" to="f_scan" />
+      <remap from="scan_filtered" to="f_scan_rep117" />
+    </node> -->
+
+</launch>
